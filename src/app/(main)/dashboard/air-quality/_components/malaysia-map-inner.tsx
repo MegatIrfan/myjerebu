@@ -5,7 +5,21 @@ import type { StateAqiResult } from "./waqi-service";
 import { getAqiMapFill, getAqiInfo } from "./aqi-utils";
 import { malaysiaStates, type MalaysiaState } from "./malaysia-states";
 import { malaysiaDistricts, getDistrictsByState, type MalaysiaDistrict } from "./malaysia-districts";
-import { Layers, MapPin, Globe, Compass, RefreshCw, ZoomIn, ZoomOut, Maximize2, Minimize2, Flame, LocateFixed, Building2, ArrowLeft } from "lucide-react";
+import {
+  Layers,
+  MapPin,
+  Globe,
+  Compass,
+  RefreshCw,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Minimize2,
+  Flame,
+  LocateFixed,
+  Building2,
+  ArrowLeft,
+} from "lucide-react";
 import type { SimulationDay } from "./haze-simulation-data";
 import { HazeSmokeOverlay } from "./haze-smoke-overlay";
 import { toast } from "sonner";
@@ -854,6 +868,7 @@ export default function MalaysiaMapInner({
       setShowMarkers(true);
     }
   };
+
   const jumpToRegion = (region: "all" | "peninsular" | "sabah" | "sarawak") => {
     if (!leafletMapRef.current) return;
     const map = leafletMapRef.current;
