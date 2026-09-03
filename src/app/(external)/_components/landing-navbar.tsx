@@ -6,19 +6,19 @@ import {
   Globe,
   LayoutDashboard,
   LogIn,
-  Sun,
-  Moon,
-  Compass,
-  FileText,
-  Table,
+  Map,
+  TableProperties,
   TrendingUp,
   HeartPulse,
+  FileText,
   Menu,
   X,
-  Sparkles,
+  ShieldCheck,
+  Activity,
 } from "lucide-react";
-import { ThemeSwitcher } from "@/app/(main)/dashboard/_components/header/theme-switcher";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ThemeSwitcher } from "@/app/(main)/dashboard/_components/header/theme-switcher";
 
 interface LandingNavbarProps {
   lang: "ms" | "en";
@@ -31,15 +31,15 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navLinks = [
-    { href: "#map-section", label: lang === "ms" ? "Peta IPU" : "APIMS Map", icon: Compass },
-    { href: "#hourly-section", label: lang === "ms" ? "Jadual Sejam" : "Hourly Table", icon: Table },
+    { href: "#map-section", label: lang === "ms" ? "Peta Interaktif" : "APIMS Map", icon: Map },
+    { href: "#hourly-section", label: lang === "ms" ? "Jadual Sejam" : "Hourly Table", icon: TableProperties },
     { href: "#ranking-section", label: lang === "ms" ? "Carta & Kedudukan" : "Rankings & Trends", icon: TrendingUp },
     { href: "#advisory-section", label: lang === "ms" ? "Nasihat Kesihatan" : "Health Advisory", icon: HeartPulse },
     { href: "#references-section", label: lang === "ms" ? "Panduan & Rujukan" : "Publications", icon: FileText },
@@ -47,10 +47,10 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+      className={`sticky top-0 z-50 w-full transition-all duration-200 ${
         isScrolled
-          ? "bg-background/85 backdrop-blur-md shadow-xs border-b border-border"
-          : "bg-background/95 border-b border-border/60"
+          ? "bg-background/90 backdrop-blur-md shadow-xs border-b border-border"
+          : "bg-background/95 border-b border-border/80"
       }`}
     >
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -58,17 +58,17 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
             {/* Government Crest / Brand Emblem */}
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/25 shadow-xs transition-transform group-hover:scale-105">
-              <span className="text-xl">🇲🇾</span>
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
+              <ShieldCheck className="size-5" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="font-heading font-black text-lg tracking-tight text-foreground">
+                <span className="font-heading font-black text-base tracking-tight text-foreground">
                   My<span className="text-primary">Jerebu</span>
                 </span>
-                <span className="rounded bg-primary/15 px-1.5 py-0.2 text-[10px] font-bold text-primary font-mono border border-primary/25">
+                <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-mono font-bold">
                   APIMS
-                </span>
+                </Badge>
               </div>
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline-block">
                 Jabatan Alam Sekitar Malaysia
@@ -93,23 +93,26 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
-          {/* Language Toggle */}
-          <button
-            type="button"
+          {/* Language Toggle Button */}
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onToggleLang}
-            className="flex items-center gap-1 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground ring-1 ring-border transition-all hover:bg-muted/80 cursor-pointer"
+            className="h-8 gap-1 px-2.5 text-xs font-bold"
             title="Tukar Bahasa (BM/EN)"
           >
             <Globe className="size-3.5 text-primary" />
             <span>{lang.toUpperCase()}</span>
-          </button>
+          </Button>
 
           {/* Theme Toggle */}
-          <ThemeSwitcher />
+          <div className="flex items-center [&_button]:size-8 [&_button]:rounded-lg">
+            <ThemeSwitcher />
+          </div>
 
           {/* Launch Dashboard Button */}
           <Link href="/dashboard/air-quality" className="hidden sm:inline-flex">
-            <Button size="sm" className="gap-1.5 font-bold shadow-xs text-xs h-9 px-3.5">
+            <Button size="sm" className="h-8 gap-1.5 px-3 text-xs font-bold shadow-xs">
               <LayoutDashboard className="size-3.5" />
               <span>{lang === "ms" ? "Buka Dashboard" : "Open Dashboard"}</span>
             </Button>
@@ -117,20 +120,21 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
 
           {/* Sign In Button */}
           <Link href="/login">
-            <Button variant="outline" size="sm" className="gap-1.5 font-semibold text-xs h-9 px-3">
+            <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-xs font-semibold">
               <LogIn className="size-3.5" />
-              <span>{lang === "ms" ? "Log Masuk" : "Sign In"}</span>
+              <span className="hidden sm:inline">{lang === "ms" ? "Log Masuk" : "Sign In"}</span>
             </Button>
           </Link>
 
           {/* Mobile Menu Toggle */}
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden rounded-lg p-2 text-muted-foreground hover:bg-muted"
+            className="lg:hidden size-8"
           >
-            {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+            {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+          </Button>
         </div>
       </div>
 
@@ -142,7 +146,7 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
               key={link.href}
               href={link.href}
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 rounded-lg p-2 text-sm font-semibold text-foreground hover:bg-muted"
+              className="flex items-center gap-2.5 rounded-lg p-2 text-sm font-semibold text-foreground hover:bg-muted"
             >
               <link.icon className="size-4 text-primary" />
               <span>{link.label}</span>
@@ -150,7 +154,7 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
           ))}
           <div className="pt-2 border-t border-border flex flex-col gap-2">
             <Link href="/dashboard/air-quality" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full gap-2 font-bold text-xs">
+              <Button className="w-full gap-2 font-bold text-xs h-9">
                 <LayoutDashboard className="size-4" />
                 <span>{lang === "ms" ? "Buka Dashboard Penuh" : "Open Studio Dashboard"}</span>
               </Button>

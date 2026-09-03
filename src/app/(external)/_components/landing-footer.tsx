@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, Mail, MapPin, Globe, ExternalLink, ShieldCheck } from "lucide-react";
+import { Phone, Mail, MapPin, Globe, ExternalLink, ShieldCheck, FileText, ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 interface LandingFooterProps {
   lang: "ms" | "en";
@@ -15,7 +18,9 @@ export function LandingFooter({ lang }: LandingFooterProps) {
           {/* Col 1: Brand & Contact Us (5 cols) */}
           <div className="md:col-span-5 space-y-3">
             <div className="flex items-center gap-2.5">
-              <span className="text-2xl">🇲🇾</span>
+              <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
+                <ShieldCheck className="size-5" />
+              </div>
               <div>
                 <span className="font-heading font-black text-lg tracking-tight text-white">
                   My<span className="text-sky-400">Jerebu</span> APIMS
@@ -108,10 +113,12 @@ export function LandingFooter({ lang }: LandingFooterProps) {
                   <ExternalLink className="size-3 text-slate-500" />
                 </a>
               </li>
-              <li>
-                <Link href="/dashboard/air-quality" className="text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1">
-                  <span>Studio Admin Dashboard</span>
-                  <span>→</span>
+              <li className="pt-1">
+                <Link href="/dashboard/air-quality">
+                  <Button variant="secondary" size="sm" className="h-7 text-xs font-bold gap-1 px-2.5">
+                    <span>Studio Admin Dashboard</span>
+                    <ArrowRight className="size-3" />
+                  </Button>
                 </Link>
               </li>
             </ul>
