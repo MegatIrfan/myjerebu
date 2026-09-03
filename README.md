@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="media/main.png" alt="MyJerebu — Malaysia Air Quality & Haze Monitoring Portal" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
+</p>
+
 # 🌫️ MyJerebu — Malaysia Air Quality & Haze Monitoring Portal
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=flat&logo=next.js)](https://nextjs.org/)
