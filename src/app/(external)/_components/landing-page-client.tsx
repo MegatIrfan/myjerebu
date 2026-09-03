@@ -28,8 +28,8 @@ export function LandingPageClient({ initialResults }: LandingPageClientProps) {
       {/* Top Government APIMS Navbar */}
       <LandingNavbar lang={lang} onToggleLang={handleToggleLang} />
 
-      {/* Main Body Content */}
-      <main className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+      {/* Main Body Content with wider max-w for Bento Grid */}
+      <main className="container mx-auto max-w-[1536px] px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
         {/* 1. Hero Map Section */}
         <LandingHeroMap
           results={initialResults}
