@@ -1,162 +1,196 @@
-<p align="center">
-  <img src="media/main.png" alt="MyJerebu — Malaysia Air Quality & Haze Monitoring Portal" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
-</p>
+<div align="center">
 
-# 🌫️ MyJerebu — Malaysia Air Quality & Haze Monitoring Portal
+<img src="media/main.png" alt="MyJerebu Hero Banner" width="100%" style="border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3);" />
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=flat&logo=next.js)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19.0-blue?style=flat&logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![Leaflet GIS](https://img.shields.io/badge/Leaflet-GIS_Maps-199900?style=flat&logo=leaflet)](https://leafletjs.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<br /><br />
 
-**MyJerebu** is an advanced, real-time air quality monitoring and transboundary haze simulation platform for Malaysia. Built with Next.js 16, React 19, Leaflet GIS mapping, and WAQI telemetry, MyJerebu provides public health intelligence, particulate pollution analytics, and 7-day meteorological forecasts across all 16 Malaysian states and federal territories.
+# MyJerebu — Air Quality & Transboundary Haze Intelligence
 
----
+**A high-precision real-time atmospheric telemetry and 7-day haze simulation portal for Malaysia.**
 
-## 📸 Screenshots
-
-<p align="center">
-  <img src="media/malaysia-map-satellite.png" alt="MyJerebu Interactive GIS Satellite Air Quality Map" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
-  <em align="center">Interactive ESRI Satellite GIS Air Quality Map with 16 State Monitoring Station pins and regional boundaries.</em>
-</p>
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.0-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React 19](https://img.shields.io/badge/React-19.0-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Leaflet GIS](https://img.shields.io/badge/Leaflet-GIS_Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 
 <br />
 
 <p align="center">
-  <img src="media/stations-pollutants-forecast.png" alt="16 State Monitoring Stations, Pollutant Breakdown & 7-Day Forecast" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
-  <em align="center">16 Malaysian State Stations Grid with official state flags, 6 Pollutant Breakdown meters, and 7-Day AQI Forecast chart.</em>
+  <a href="#-overview">Overview</a> •
+  <a href="#-key-features">Features</a> •
+  <a href="#-system-architecture">Architecture</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-getting-started">Quickstart</a> •
+  <a href="#-author">Author</a>
 </p>
 
----
-
-## 🌟 Key Features
-
-### 1. 🗺️ Interactive GIS Air Quality Map & Satellite Telemetry
-- **Interactive Leaflet Map**: Switch seamlessly between **ESRI Satellite Imagery**, **Topography**, **Street Maps**, and **Dark Canvas**.
-- **16 Malaysian State Stations**: High-precision interactive map pins and boundaries for all states with dynamic Air Quality Index (AQI/IPU) color codes.
-- **Regional Focus Controls**: Instant zoom focus buttons for Peninsular Malaysia, Sabah, and Sarawak.
-- **Custom SVG State Flags**: Integrated official flag icons for all 13 states and 3 federal territories.
-
-### 2. 🔥 7-Day Transboundary Haze Simulation & Wind Dynamics
-- **Live Stream vs. Simulation Toggle**: Clean switch between live real-time feeds and 7-day haze playback.
-- **Organic Smoke Shader Overlay**: Realistic visual smoke plumes and moving wind trajectory streamlines.
-- **Sumatera & Kalimantan Fire Hotspots**: Animated pulsing radar markers on active peatland fire clusters.
-- **Timeline Player**: Play/pause, step navigation, 1x/2x/3x playback speeds, and meteorological HUD showing daily impact levels.
-
-### 3. 📊 16 State Monitoring Stations Directory
-- Comprehensive telemetry grid and table views with search and filtering by region (*Peninsular*, *East Malaysia*) and status (*Good*, *Moderate*, *Unhealthy*, *Hazardous*).
-- Instant **CSV Export** for station telemetry data.
-
-### 4. 🔬 In-Depth Pollutant Analysis (PM2.5, PM10, O₃, NO₂, SO₂, CO)
-- Deep breakdown of 6 critical atmospheric pollutants with WHO 24-hour guidelines and DOE National Thresholds.
-- State-by-state comparative concentration meters with automated exceedance badges.
-
-### 5. 🌦️ 7-Day AQI Forecast & Meteorological Weather Analytics
-- ECMWF/CAMS atmospheric model trajectory projections for all 16 states.
-- Real-time temperature, humidity, wind speed, and barometric pressure observations.
-
-### 6. 🛡️ Health Advisory & School Closure Matrix
-- Interactive AQI Health Simulator slider (0–350+ AQI).
-- Official Ministry of Health (MOH) and Department of Environment (DOE) guidelines for general public, high-risk groups, school protocols, and N95 mask recommendations.
-
-### 7. 📑 Official Haze Reports & Scientific Archive
-- Filterable archive of annual environmental reports, quarterly summaries, and transboundary haze crisis whitepapers.
-
-### 8. 🚨 Haze Alerts & Notification Center
-- Automated dispatch rules via Email, SMS, and Telegram Bot for active threshold breaches.
-- Quick links to DOE complaint hotlines (1-800-88-2727) and BOMBA emergency rescue.
-
-### 9. 🔐 Split-Screen Admin Login Portal (`/login`)
-- Dedicated login portal with live national telemetry stats and 1-click demo access for **Megat Irfan (Lead Administrator)** and **DOE Research Officer**.
+</div>
 
 ---
 
-## 🛠️ Technology Stack
+## 🛰️ Overview
 
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Server & Client Components)
-- **Library**: [React 19](https://react.dev/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict Mode)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **UI & Icons**: [shadcn/ui](https://ui.shadcn.com/) (`radix-nova`), [Lucide React](https://lucide.dev/)
-- **Mapping & GIS**: [Leaflet](https://leafletjs.com/), ESRI ArcGIS Tile Servers, GeoJSON State Boundaries
-- **Charts & Visuals**: [Recharts](https://recharts.org/)
-- **Data Source**: [World Air Quality Index (WAQI) Project API](https://waqi.info/) & DOE Telemetry
+**MyJerebu** is an enterprise-grade environmental monitoring platform built to deliver transparent, actionable air pollution telemetry across Malaysia. Powered by live sensor feeds from the **World Air Quality Index (WAQI)** and satellite observation models, MyJerebu transforms complex atmospheric data into intuitive spatial maps, particulate breakdowns, meteorological trend forecasts, and actionable public health advisories.
 
----
+<br />
 
-## 🚀 Getting Started
+<div align="center">
+  <img src="media/malaysia-map-satellite.png" alt="Interactive GIS Satellite Map" width="100%" style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
+  <p><em>Interactive ESRI Satellite GIS Viewport with 16 State Monitoring Station Telemetry Pins</em></p>
+</div>
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18.18 or higher)
-- `npm` or `pnpm`
+<br />
 
-### Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/MegatIrfan/myjerebu.git
-   cd myjerebu
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Set up Environment Variables (Optional)**:
-   Create a `.env.local` file in the root directory:
-   ```env
-   NEXT_PUBLIC_WAQI_TOKEN=your_waqi_api_token_here
-   ```
-
-4. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-
-5. **Open the application**:
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+<div align="center">
+  <img src="media/stations-pollutants-forecast.png" alt="16 State Stations Grid & 7-Day Forecast" width="100%" style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
+  <p><em>16 State Stations Grid, 6 Pollutant Breakdown Meters, and 7-Day AQI Forecast Chart</em></p>
+</div>
 
 ---
 
-## 📁 Project Structure
+## ✨ Key Capabilities
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🗺️ Dynamic Leaflet GIS Mapping</h3>
+      <ul>
+        <li><b>Multiple Basemaps:</b> Seamless toggle between ESRI Satellite, Topography, Street Maps, and Dark Canvas.</li>
+        <li><b>16 State Pinpoint Sensors:</b> Dynamic color-coded AQI pins and boundary polygons for all 13 states & 3 federal territories.</li>
+        <li><b>Region Focus Controls:</b> 1-click smooth zoom for Peninsular Malaysia, Sabah, and Sarawak.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🔥 7-Day Haze Simulation Mode</h3>
+      <ul>
+        <li><b>Mode Switch:</b> Instant toggle between Live Telemetry and 7-Day Haze Playback.</li>
+        <li><b>Organic Smoke Overlay:</b> Animated GPU smoke shader and monsoon wind trajectory streamlines.</li>
+        <li><b>Hotspot Radar:</b> Live fire cluster indicators across Sumatra and Kalimantan peatlands.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🔬 6-Pollutant Granular Analysis</h3>
+      <ul>
+        <li><b>Pollutant Dossiers:</b> In-depth metrics for <code>PM2.5</code>, <code>PM10</code>, <code>O₃</code>, <code>NO₂</code>, <code>SO₂</code>, and <code>CO</code>.</li>
+        <li><b>WHO & DOE Benchmarks:</b> Real-time compliance comparison against national safe thresholds and WHO 24-hr guidelines.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🌦️ 7-Day Predictive AQI Forecasting</h3>
+      <ul>
+        <li><b>ECMWF / CAMS Models:</b> 7-day particulate movement projections for every state.</li>
+        <li><b>Meteorological Feed:</b> Ambient temperature, relative humidity, wind velocity, and barometric pressure.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🛡️ Public Health & School Closure Matrix</h3>
+      <ul>
+        <li><b>Interactive Simulator:</b> Drag-and-drop AQI health risk slider (0 to 350+ AQI).</li>
+        <li><b>MOH & DOE Protocols:</b> Tailored advisories for general public, vulnerable groups, and automatic school closure triggers.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🔐 Executive Split-Screen Authentication</h3>
+      <ul>
+        <li><b>Dedicated Login Portal:</b> Branded <code>/login</code> screen with live national air quality telemetry ticker.</li>
+        <li><b>Quick-Fill Demo:</b> 1-click instant login for Lead Administrator and DOE Research Officer.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 📐 System Architecture
 
 ```
 myjerebu/
-├── media/                   # Showcase screenshots for repository documentation
-├── public/
-│   └── flags/1x2/           # Official Malaysian state flag SVGs
-├── src/
-│   ├── app/
-│   │   ├── (main)/dashboard/
-│   │   │   ├── air-quality/ # Interactive Leaflet map & Haze simulation
-│   │   │   ├── stations/    # 16 State monitoring directory & CSV export
-│   │   │   ├── pollutants/  # 6 Pollutant breakdowns & WHO standards
-│   │   │   ├── forecast/    # 7-Day ECMWF AQI projections
-│   │   │   ├── weather/     # Temperature, humidity & barometric climate
-│   │   │   ├── advisory/    # Health guidelines & interactive simulator
-│   │   │   ├── reports/     # Official annual & haze report archives
-│   │   │   ├── alerts/      # Notification triggers & emergency hotlines
-│   │   │   └── profile/     # Admin user profile management
-│   │   ├── login/           # Split-screen branded authentication portal
-│   │   └── api/             # Telemetry refresh API endpoints
-│   ├── components/ui/       # shadcn/ui components
-│   └── navigation/          # Sidebar navigation config
-└── README.md
+├── 📁 media/                    # Showcase screenshots & brand assets
+├── 📁 public/
+│   └── 📁 flags/1x2/           # Vector SVGs for all 16 Malaysian state flags
+├── 📁 src/
+│   ├── 📁 app/
+│   │   ├── 📁 (main)/dashboard/
+│   │   │   ├── 📁 air-quality/ # Leaflet GIS map, smoke shader & haze player
+│   │   │   ├── 📁 stations/    # 16 State stations directory & CSV export
+│   │   │   ├── 📁 pollutants/  # 6 Pollutant meters & WHO benchmark cards
+│   │   │   ├── 📁 forecast/    # 7-Day ECMWF AQI trajectory projections
+│   │   │   ├── 📁 weather/     # Temperature, humidity & barometric climate
+│   │   │   ├── 📁 advisory/    # Health matrix & interactive slider simulator
+│   │   │   ├── 📁 reports/     # Official annual & haze report archives
+│   │   │   ├── 📁 alerts/      # Automated alert dispatch & emergency hotlines
+│   │   │   └── 📁 profile/     # Administrator profile settings
+│   │   ├── 📁 login/           # Split-screen branded authentication portal
+│   │   └── 📁 api/             # Telemetry cache refresh endpoints
+│   ├── 📁 components/ui/       # Radix Nova styled shadcn/ui components
+│   └── 📁 navigation/          # Dynamic dashboard sidebar configuration
+└── 📄 README.md
 ```
+
+---
+
+## 🛠️ Tech Stack & Dependencies
+
+| Category | Technologies |
+| :--- | :--- |
+| **Core Framework** | [Next.js 16](https://nextjs.org/) (App Router, Server Actions, React Server Components) |
+| **UI Library** | [React 19](https://react.dev/), [TypeScript 5](https://www.typescriptlang.org/) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/), [Geist Sans Font](https://vercel.com/font) |
+| **UI Primitives** | [shadcn/ui](https://ui.shadcn.com/) (`radix-nova`), [Lucide React](https://lucide.dev/) |
+| **Mapping & GIS** | [Leaflet](https://leafletjs.com/), ESRI World Imagery Tile Servers, GeoJSON Boundaries |
+| **Data Visuals** | [Recharts](https://recharts.org/) |
+| **Telemetry Source** | [WAQI Open Air Quality API](https://waqi.info/), DOE Malaysia Station Feeds |
+
+---
+
+## ⚡ Quickstart
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/MegatIrfan/myjerebu.git
+cd myjerebu
+```
+
+### 2. Install dependencies
+```bash
+npm install
+```
+
+### 3. Configure environment variables *(optional)*
+Create `.env.local` in your root folder:
+```env
+NEXT_PUBLIC_WAQI_TOKEN=your_waqi_api_token
+```
+
+### 4. Run the development server
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to experience the dashboard.
 
 ---
 
 ## 👤 Author & Maintainer
 
-**Megat Irfan**
-- GitHub: [@MegatIrfan](https://github.com/MegatIrfan)
-- Repository: [https://github.com/MegatIrfan/myjerebu](https://github.com/MegatIrfan/myjerebu)
+<div align="center">
+
+### **Megat Irfan**
+*Lead Administrator & Software Engineer*
+
+[![GitHub](https://img.shields.io/badge/GitHub-MegatIrfan-181717?style=for-the-badge&logo=github)](https://github.com/MegatIrfan)
+[![Repository](https://img.shields.io/badge/Repository-MyJerebu-2563EB?style=for-the-badge&logo=github)](https://github.com/MegatIrfan/myjerebu)
+
+</div>
 
 ---
 
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
+<div align="center">
+  <sub>Built with ❤️ for public environmental awareness in Malaysia. Released under the MIT License.</sub>
+</div>
