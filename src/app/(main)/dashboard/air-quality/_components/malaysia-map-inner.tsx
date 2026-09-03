@@ -367,6 +367,21 @@ export default function MalaysiaMapInner({
             </div>
           `;
 
+          // Rich Tooltip on Hover for District Pins
+          marker.bindTooltip(
+            `<div style="font-family:system-ui,-apple-system,sans-serif;padding:6px 10px;background:#0f172a;color:white;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.3);min-width:150px">
+              <div style="font-size:10px;font-weight:700;color:#93c5fd;text-transform:uppercase">📍 ${district.stateName} Daerah</div>
+              <div style="font-size:13px;font-weight:800;color:#ffffff;margin-top:1px">${district.name}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${fill}"></span>
+                <span style="font-size:13px;font-weight:900;color:${fill}">AQI ${aqi}</span>
+                <span style="font-size:11px;color:#cbd5e1">(${info.label})</span>
+              </div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:2px">${district.stationType} · ${district.stationCode}</div>
+            </div>`,
+            { sticky: true, opacity: 0.98, offset: [0, -10] }
+          );
+
           marker.bindPopup(popupContent, { maxWidth: 260 });
 
           marker.on("popupopen", () => {
@@ -425,7 +440,44 @@ export default function MalaysiaMapInner({
           const humidity = res?.data?.iaqi?.h?.v;
           const pm25 = res?.data?.iaqi?.pm25?.v;
           const stationTitle = res?.data?.city?.name || state.nameMs;
-          const districtCount = getDistrictsByState(state.id).length;
+          const districtsInThisState = getDistrictsByState(state.id);
+          const districtCount = districtsInThisState.length;
+
+          const districtBadges = districtsInThisState
+            .map((d) => {
+              const dParentAqi = aqi ?? 60;
+              const dAqi = Math.max(10, Math.min(450, dParentAqi + d.baseAqiOffset));
+              const dFill = getAqiMapFill(dAqi);
+              return `<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;margin:2px 2px 2px 0;font-size:10px;color:#ffffff">
+                <span style="width:6px;height:6px;border-radius:50%;background:${dFill}"></span>
+                <b>${d.name}</b> (${dAqi})
+              </span>`;
+            })
+            .join("");
+
+          // Hover Tooltip on State Pins showing district breakdown
+          marker.bindTooltip(
+            `<div style="font-family:system-ui,-apple-system,sans-serif;min-width:210px;max-width:280px;padding:8px 10px;background:#0f172a;color:white;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.35)">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span class="malaysia-state-flag-icon malaysia-state-flag-icon-${state.flagCode}" style="width:18px;height:12px;border-radius:2px"></span>
+                <span style="font-weight:800;font-size:14px;color:#ffffff">${state.name}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;margin:4px 0">
+                <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background-color:${fill}"></span>
+                <span style="font-weight:900;font-size:14px;color:${fill}">${aqi !== null ? `AQI ${aqi}` : "No Data"}</span>
+                <span style="font-size:11px;font-weight:600;color:#94a3b8">· ${info.label}</span>
+              </div>
+              <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;margin-top:4px">
+                <div style="font-size:10px;font-weight:700;color:#93c5fd;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between">
+                  <span>📍 ${districtCount} Stesen Daerah:</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:2px">
+                  ${districtBadges}
+                </div>
+              </div>
+            </div>`,
+            { sticky: true, opacity: 0.98, offset: [0, -12] }
+          );
 
           const popupContent = `
             <div style="font-family:system-ui,-apple-system,sans-serif;width:240px;padding:12px;background:white">
@@ -586,25 +638,55 @@ export default function MalaysiaMapInner({
 
           const stateObj = malaysiaStates.find((s) => s.id === stateId);
           const flagCode = stateObj?.flagCode || "ft";
+          const districtsInState = getDistrictsByState(stateId);
+          const districtCount = districtsInState.length;
+
+          const districtBadges = districtsInState
+            .map((d) => {
+              const dParentAqi = aqi ?? 60;
+              const dAqi = Math.max(10, Math.min(450, dParentAqi + d.baseAqiOffset));
+              const dFill = getAqiMapFill(dAqi);
+              return `<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.12);padding:2px 5px;border-radius:4px;margin:2px 2px 2px 0;font-size:10px;color:#ffffff">
+                <span style="width:6px;height:6px;border-radius:50%;background:${dFill}"></span>
+                <b>${d.name}</b> (${dAqi})
+              </span>`;
+            })
+            .join("");
 
           layer.bindTooltip(
-            `<div style="font-family:system-ui,-apple-system,sans-serif;min-width:140px;padding:2px 4px">
+            `<div style="font-family:system-ui,-apple-system,sans-serif;min-width:210px;max-width:280px;padding:8px 10px;background:rgba(15,23,42,0.96);color:white;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.35);backdrop-filter:blur(6px)">
               <div style="display:flex;align-items:center;gap:6px">
-                <span class="malaysia-state-flag-icon malaysia-state-flag-icon-${flagCode}" style="width:16px;height:11px;display:inline-block;border-radius:2px"></span>
-                <span style="font-weight:700;font-size:13px;color:#111">${stateName}</span>
+                <span class="malaysia-state-flag-icon malaysia-state-flag-icon-${flagCode}" style="width:18px;height:12px;display:inline-block;border-radius:2px"></span>
+                <span style="font-weight:800;font-size:14px;color:#ffffff">${stateName}</span>
               </div>
-              <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+              <div style="display:flex;align-items:center;gap:6px;margin:4px 0">
                 <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background-color:${getAqiMapFill(aqi)}"></span>
-                <span style="font-weight:800;font-size:13px;color:#111">${aqi !== null ? `AQI ${aqi}` : "Tiada Data"}</span>
+                <span style="font-weight:900;font-size:14px;color:${getAqiMapFill(aqi)}">${aqi !== null ? `AQI ${aqi}` : "Tiada Data"}</span>
+                <span style="font-size:11px;font-weight:600;color:#94a3b8">· ${info.label}</span>
               </div>
-              <div style="font-size:11px;font-weight:500;color:#555;margin-top:2px">${info.labelMs}</div>
+              <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;margin-top:4px">
+                <div style="font-size:10px;font-weight:700;color:#93c5fd;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between">
+                  <span>📍 ${districtCount} Stesen Daerah:</span>
+                  <span style="color:#cbd5e1;font-weight:400;font-size:9px">Klik untuk Drill-Down</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:2px">
+                  ${districtBadges}
+                </div>
+              </div>
             </div>`,
-            { sticky: true, opacity: 0.95 }
+            { sticky: true, opacity: 0.98 }
           );
 
           layer.on({
             click() {
-              if (stateId) onStateSelect(stateId);
+              if (stateId) {
+                onStateSelect(stateId);
+                setGranularity("district");
+                const st = malaysiaStates.find((s) => s.id === stateId);
+                if (st && leafletMapRef.current) {
+                  leafletMapRef.current.flyTo(st.coordinates, 9.5, { duration: 1.2 });
+                }
+              }
             },
             mouseover(e) {
               const target = e.target;
