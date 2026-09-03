@@ -16,6 +16,7 @@ import { PollutantBreakdown } from "./pollutant-breakdown";
 import { getAqiInfo } from "./aqi-utils";
 import { HAZE_SIMULATION_DAYS, type SimulationDay } from "./haze-simulation-data";
 import { HazeSimulationTimeline } from "./haze-simulation-timeline";
+import { FireHotspotStreams } from "./fire-hotspot-streams";
 
 interface AirQualityClientProps {
   initialResults: StateAqiResult[];
@@ -152,6 +153,11 @@ export function AirQualityClient({ initialResults, states }: AirQualityClientPro
           isSimulationActive={isSimulationActive}
           onToggleSimulation={setIsSimulationActive}
         />
+      </div>
+
+      {/* Live Fire Spot & Thermal Hotspot Surveillance Streams */}
+      <div className="w-full mt-1">
+        <FireHotspotStreams />
       </div>
 
       {/* Secondary Detailed Breakdown Section */}
