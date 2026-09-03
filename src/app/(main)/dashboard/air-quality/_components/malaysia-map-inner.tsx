@@ -1043,11 +1043,11 @@ export default function MalaysiaMapInner({
   }, [aqiMap, onStateSelect]);
 
   const legendItems = [
-    { key: "good", label: "Good (0–50)", color: "#22c55e" },
-    { key: "moderate", label: "Moderate (51–100)", color: "#eab308" },
-    { key: "unhealthy-sensitive", label: "Sensitive (101–150)", color: "#f97316" },
-    { key: "unhealthy", label: "Unhealthy (151–200)", color: "#ef4444" },
-    { key: "very-unhealthy", label: "Hazardous (201+)", color: "#9333ea" },
+    { key: "good", label: "Good (0–50)", color: "#3b82f6" },
+    { key: "moderate", label: "Moderate (51–100)", color: "#22c55e" },
+    { key: "unhealthy", label: "Unhealthy (101–200)", color: "#eab308" },
+    { key: "very-unhealthy", label: "Very Unhealthy (201–300)", color: "#f97316" },
+    { key: "hazardous", label: "Hazardous (301+)", color: "#ef4444" },
   ];
 
   const selectedStateObj = selectedStateId ? malaysiaStates.find((s) => s.id === selectedStateId) : null;

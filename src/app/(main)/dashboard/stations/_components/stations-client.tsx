@@ -212,9 +212,9 @@ export function StationsClient({ initialResults, states }: StationsClientProps) 
             <option value="all">All AQI Levels</option>
             <option value="good">Good (0–50)</option>
             <option value="moderate">Moderate (51–100)</option>
-            <option value="sensitive">Sensitive (101–150)</option>
-            <option value="unhealthy">Unhealthy (151–200)</option>
-            <option value="very-unhealthy">Hazardous (201+)</option>
+            <option value="unhealthy">Unhealthy (101–200)</option>
+            <option value="very-unhealthy">Very Unhealthy (201–300)</option>
+            <option value="hazardous">Hazardous (301+)</option>
           </select>
 
           {/* View Mode Toggle */}
