@@ -11,6 +11,22 @@
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="media/malaysia-map-satellite.png" alt="MyJerebu Interactive GIS Satellite Air Quality Map" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
+  <em align="center">Interactive ESRI Satellite GIS Air Quality Map with 16 State Monitoring Station pins and regional boundaries.</em>
+</p>
+
+<br />
+
+<p align="center">
+  <img src="media/stations-pollutants-forecast.png" alt="16 State Monitoring Stations, Pollutant Breakdown & 7-Day Forecast" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
+  <em align="center">16 Malaysian State Stations Grid with official state flags, 6 Pollutant Breakdown meters, and 7-Day AQI Forecast chart.</em>
+</p>
+
+---
+
 ## 🌟 Key Features
 
 ### 1. 🗺️ Interactive GIS Air Quality Map & Satellite Telemetry
@@ -105,6 +121,7 @@
 
 ```
 myjerebu/
+├── media/                   # Showcase screenshots for repository documentation
 ├── public/
 │   └── flags/1x2/           # Official Malaysian state flag SVGs
 ├── src/
