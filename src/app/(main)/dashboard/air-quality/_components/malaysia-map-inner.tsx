@@ -4,9 +4,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { StateAqiResult } from "./waqi-service";
 import { getAqiMapFill, getAqiInfo } from "./aqi-utils";
 import { malaysiaStates, type MalaysiaState } from "./malaysia-states";
-import { Layers, MapPin, Globe, Compass, RefreshCw, ZoomIn, ZoomOut, Maximize2, Minimize2, Flame } from "lucide-react";
+import { Layers, MapPin, Globe, Compass, RefreshCw, ZoomIn, ZoomOut, Maximize2, Minimize2, Flame, LocateFixed } from "lucide-react";
 import type { SimulationDay } from "./haze-simulation-data";
 import { HazeSmokeOverlay } from "./haze-smoke-overlay";
+import { toast } from "sonner";
 
 // State code → our state ID mapping for GeoJSON
 const STATE_CODE_TO_ID: Record<string, string> = {
@@ -86,6 +87,8 @@ export default function MalaysiaMapInner({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hotspotsLayerGroupRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userLocationGroupRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const layersRef = useRef<Record<string, any>>({});
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const LRef = useRef<any>(null);
@@ -95,6 +98,8 @@ export default function MalaysiaMapInner({
   const [showMarkers, setShowMarkers] = useState(true);
   const [filterLevel, setFilterLevel] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
 
   const toggleFullscreen = () => {
     setIsFullscreen((prev) => {
@@ -104,6 +109,18 @@ export default function MalaysiaMapInner({
       }, 200);
       return next;
     });
+  };
+
+  // Helper to calculate distance in KM using Haversine formula
+  const getDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   };
 
   // Build AQI lookup map (supporting live data and simulation overrides)
@@ -144,9 +161,9 @@ export default function MalaysiaMapInner({
           border-radius: 9999px;
           color: white;
           font-weight: 800;
+          font-family: system-ui, -apple-system, sans-serif;
           font-size: 11px;
-          letter-spacing: -0.02em;
-          border: 2px solid white;
+          border: 2px solid rgba(255, 255, 255, 0.95);
           box-shadow: 0 4px 12px rgba(0,0,0,0.35);
           cursor: pointer;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -232,6 +249,35 @@ export default function MalaysiaMapInner({
         .hotspot-ring.extreme {
           border-color: #dc2626;
           animation: hotspot-pulse 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+        }
+        @keyframes user-gps-radar {
+          0% { transform: scale(0.6); opacity: 0.95; }
+          70% { transform: scale(2.2); opacity: 0.2; }
+          100% { transform: scale(2.8); opacity: 0; }
+        }
+        .user-gps-marker {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+        }
+        .user-gps-core {
+          width: 14px;
+          height: 14px;
+          border-radius: 9999px;
+          background-color: #2563eb;
+          border: 2.5px solid #ffffff;
+          box-shadow: 0 0 12px rgba(37,99,235,0.85);
+          z-index: 2;
+        }
+        .user-gps-wave {
+          position: absolute;
+          inset: 0;
+          border-radius: 9999px;
+          background-color: rgba(37, 99, 235, 0.45);
+          animation: user-gps-radar 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
         }
       `;
       document.head.appendChild(style);
@@ -628,8 +674,6 @@ export default function MalaysiaMapInner({
       setShowMarkers(true);
     }
   };
-
-  // Preset region view jumps
   const jumpToRegion = (region: "all" | "peninsular" | "sabah" | "sarawak") => {
     if (!leafletMapRef.current) return;
     const map = leafletMapRef.current;
@@ -649,6 +693,145 @@ export default function MalaysiaMapInner({
     }
   };
 
+  // Locate User GPS Position & Display Nearest Station
+  const handleLocateUser = useCallback(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    toast.loading("Acquiring your location...", { id: "geo-toast" });
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsLocating(false);
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+
+        setUserCoords({ lat, lng, accuracy });
+
+        if (!leafletMapRef.current || !LRef.current) return;
+        const L = LRef.current;
+        const map = leafletMapRef.current;
+
+        // Find nearest station
+        let nearestState = malaysiaStates[0];
+        let minDistance = Infinity;
+
+        for (const st of malaysiaStates) {
+          const dist = getDistanceKm(lat, lng, st.coordinates[0], st.coordinates[1]);
+          if (dist < minDistance) {
+            minDistance = dist;
+            nearestState = st;
+          }
+        }
+
+        const nearestAqi = aqiMap[nearestState.id] ?? null;
+        const nearestInfo = getAqiInfo(nearestAqi);
+
+        // Initialize or clear user location layer group
+        if (!userLocationGroupRef.current) {
+          userLocationGroupRef.current = L.layerGroup().addTo(map);
+        } else {
+          userLocationGroupRef.current.clearLayers();
+        }
+
+        // Add accuracy radius circle
+        if (accuracy && accuracy < 50000) {
+          L.circle([lat, lng], {
+            radius: Math.max(accuracy, 120),
+            color: "#2563eb",
+            fillColor: "#3b82f6",
+            fillOpacity: 0.15,
+            weight: 1.5,
+            dashArray: "4, 4",
+          }).addTo(userLocationGroupRef.current);
+        }
+
+        // Add animated GPS beacon marker
+        const userIcon = L.divIcon({
+          className: "user-gps-custom-icon",
+          html: `
+            <div class="user-gps-marker">
+              <div class="user-gps-wave"></div>
+              <div class="user-gps-core"></div>
+            </div>
+          `,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        });
+
+        const userMarker = L.marker([lat, lng], {
+          icon: userIcon,
+          zIndexOffset: 2500,
+        }).addTo(userLocationGroupRef.current);
+
+        const popupHtml = `
+          <div style="font-family:system-ui,-apple-system,sans-serif;width:245px;padding:12px;background:white">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+              <span style="font-size:16px">📍</span>
+              <span style="font-size:13px;font-weight:700;color:#0f172a">Your Current Location</span>
+            </div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:8px">
+              GPS: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E (±${Math.round(accuracy)}m)
+            </div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px">
+              <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase">Nearest Monitoring Station</div>
+              <div style="font-size:13px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:4px">
+                <span>${nearestState.name}</span>
+                <span style="font-size:11px;color:#2563eb;font-weight:600">(${minDistance.toFixed(1)} km)</span>
+              </div>
+              <div style="font-size:11px;color:#334155;margin-top:3px">
+                Station AQI: <b style="color:${nearestInfo.color}">${nearestAqi ?? "N/A"}</b> — ${nearestInfo.label}
+              </div>
+            </div>
+            <button id="user-loc-select-btn" style="width:100%;padding:6px 0;background:#0f172a;color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">
+              View ${nearestState.name} Station Analysis
+            </button>
+          </div>
+        `;
+
+        userMarker.bindPopup(popupHtml, { maxWidth: 280 });
+
+        userMarker.on("popupopen", () => {
+          const btn = document.getElementById("user-loc-select-btn");
+          if (btn) {
+            btn.onclick = () => {
+              onStateSelect(nearestState.id);
+              userMarker.closePopup();
+            };
+          }
+        });
+
+        // Smoothly fly map to user's location
+        map.flyTo([lat, lng], 12, { duration: 1.4 });
+
+        setTimeout(() => {
+          userMarker.openPopup();
+        }, 1500);
+
+        toast.success(`📍 Location detected! Nearest station: ${nearestState.name} (${minDistance.toFixed(1)} km).`, {
+          id: "geo-toast",
+        });
+      },
+      (err) => {
+        setIsLocating(false);
+        let msg = "Failed to obtain location.";
+        if (err.code === 1) {
+          msg = "Location permission denied. Please enable location access in your browser.";
+        } else if (err.code === 2) {
+          msg = "Location position is currently unavailable.";
+        } else if (err.code === 3) {
+          msg = "Location request timed out. Please try again.";
+        }
+        toast.error(msg, { id: "geo-toast" });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [aqiMap, onStateSelect]);
+
   const legendItems = [
     { key: "good", label: "Good (0–50)", color: "#22c55e" },
     { key: "moderate", label: "Moderate (51–100)", color: "#eab308" },
@@ -665,9 +848,9 @@ export default function MalaysiaMapInner({
     >
       {/* Top Map Action Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-card p-2.5 ring-1 ring-border shadow-xs">
-        {/* Region Jumps */}
-        <div className="flex items-center gap-1">
-          <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider pl-1 pr-2 hidden sm:inline-flex items-center gap-1">
+        {/* Region Jumps & My Location */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider pl-1 pr-1 hidden sm:inline-flex items-center gap-1">
             <Compass className="size-3.5" /> Focus:
           </span>
           <button
@@ -697,6 +880,18 @@ export default function MalaysiaMapInner({
             className="rounded-lg bg-muted/60 px-2.5 py-1 text-xs font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
           >
             Sarawak
+          </button>
+
+          {/* Locate User GPS Button */}
+          <button
+            type="button"
+            onClick={handleLocateUser}
+            disabled={isLocating}
+            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-2.5 py-1 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition-all cursor-pointer disabled:opacity-60 ml-1"
+            title="Detect your current location (GPS) and show nearest air quality station"
+          >
+            <LocateFixed className={`size-3.5 ${isLocating ? "animate-spin" : ""}`} />
+            <span>{isLocating ? "Locating..." : "My Location"}</span>
           </button>
         </div>
 
