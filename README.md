@@ -6,6 +6,10 @@
 
 # MyJerebu — Air Quality & Transboundary Haze Intelligence
 
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Geist&weight=600&size=20&duration=2800&pause=1000&color=10B981&center=true&vCenter=true&width=650&lines=Malaysia+Air+Quality+%26+Haze+Monitoring+Portal;Real-Time+Telemetry+Across+16+States+%26+Federal+Territories;Interactive+7-Day+Transboundary+Haze+Simulation;ECMWF+%26+CAMS+Atmospheric+Trajectory+Forecasting" alt="MyJerebu Dynamic Telemetry Banner" />
+</p>
+
 **A high-precision real-time atmospheric telemetry and 7-day haze simulation portal for Malaysia.**
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.0-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
