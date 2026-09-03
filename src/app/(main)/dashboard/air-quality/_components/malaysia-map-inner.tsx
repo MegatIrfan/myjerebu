@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { StateAqiResult } from "./waqi-service";
 import { getAqiMapFill, getAqiInfo } from "./aqi-utils";
 import { malaysiaStates, type MalaysiaState } from "./malaysia-states";
-import { Layers, MapPin, Globe, Compass, RefreshCw, ZoomIn, ZoomOut, Maximize2, Minimize2, Flame, LocateFixed } from "lucide-react";
+import { malaysiaDistricts, getDistrictsByState, type MalaysiaDistrict } from "./malaysia-districts";
+import { Layers, MapPin, Globe, Compass, RefreshCw, ZoomIn, ZoomOut, Maximize2, Minimize2, Flame, LocateFixed, Building2, ArrowLeft } from "lucide-react";
 import type { SimulationDay } from "./haze-simulation-data";
 import { HazeSmokeOverlay } from "./haze-smoke-overlay";
 import { toast } from "sonner";
@@ -100,6 +101,15 @@ export default function MalaysiaMapInner({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
+  const [granularity, setGranularity] = useState<"state" | "district">("state");
+  const [selectedDistrictId, setSelectedDistrictId] = useState<string | null>(null);
+
+  // Automatically switch to district view when a specific state is selected
+  useEffect(() => {
+    if (selectedStateId) {
+      setGranularity("district");
+    }
+  }, [selectedStateId]);
 
   const toggleFullscreen = () => {
     setIsFullscreen((prev) => {
@@ -284,105 +294,193 @@ export default function MalaysiaMapInner({
     }
   }, []);
 
-  // Function to render custom pulsing station markers
+  // Function to render custom pulsing station markers (State Hubs or District Stations)
   const renderMarkers = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (L: any, map: any, group: any) => {
       if (!L || !group) return;
       group.clearLayers();
 
-      malaysiaStates.forEach((state: MalaysiaState) => {
-        const aqi = aqiMap[state.id] ?? null;
-        const res = resultMap[state.id];
-        const info = getAqiInfo(aqi);
-        const fill = getAqiMapFill(aqi);
-        const isSelected = selectedStateId === state.id;
+      if (granularity === "district") {
+        // Render District CAQM Stations (either filtered by selected state or all 68)
+        const targetDistricts = selectedStateId
+          ? getDistrictsByState(selectedStateId)
+          : malaysiaDistricts;
 
-        // Determine coordinates: prefer city.geo from API response if valid, else state center
-        let lat = state.coordinates[0];
-        let lng = state.coordinates[1];
-        if (res?.data?.city?.geo && res.data.city.geo.length === 2) {
-          lat = res.data.city.geo[0];
-          lng = res.data.city.geo[1];
-        }
+        targetDistricts.forEach((district: MalaysiaDistrict) => {
+          const parentStateAqi = aqiMap[district.stateId] ?? 60;
+          const aqi = Math.max(10, Math.min(450, parentStateAqi + district.baseAqiOffset));
+          const info = getAqiInfo(aqi);
+          const fill = getAqiMapFill(aqi);
+          const isSelected = selectedDistrictId === district.id;
 
-        // Filter check
-        if (filterLevel && info.status !== filterLevel) {
-          return;
-        }
-
-        // Create Custom HTML Pin Icon
-        const size = isSelected ? 38 : 32;
-        const iconHtml = `
-          <div class="aqi-marker-badge ${isSelected ? "selected" : ""}" style="width:${size}px;height:${size}px;background-color:${fill};">
-            ${aqi ?? "–"}
-          </div>
-        `;
-
-        const customIcon = L.divIcon({
-          html: iconHtml,
-          className: "",
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
-        });
-
-        const marker = L.marker([lat, lng], { icon: customIcon });
-
-        // Rich Interactive Popup
-        const temp = res?.data?.iaqi?.t?.v;
-        const humidity = res?.data?.iaqi?.h?.v;
-        const pm25 = res?.data?.iaqi?.pm25?.v;
-        const stationTitle = res?.data?.city?.name || state.nameMs;
-
-        const popupContent = `
-          <div style="font-family:system-ui,-apple-system,sans-serif;width:230px;padding:12px;background:white">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#888;letter-spacing:0.05em">${state.region === "peninsular" ? "Peninsular" : "East Malaysia"}</span>
-              <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#f3f4f6;color:#555">Active Station</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              <span class="malaysia-state-flag-icon malaysia-state-flag-icon-${state.flagCode}" style="width:20px;height:14px;border-radius:3px"></span>
-              <div style="font-size:15px;font-weight:700;color:#111;line-height:1.2">${stationTitle}</div>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0;padding:8px;border-radius:8px;background:${fill}18">
-              <span style="font-size:26px;font-weight:900;color:${fill};line-height:1">${aqi ?? "N/A"}</span>
-              <div>
-                <div style="font-size:10px;font-weight:700;color:#666">AQI INDEX</div>
-                <div style="font-size:12px;font-weight:700;color:${fill}">${info.label}</div>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #eee">
-              ${pm25 !== undefined ? `<div>PM2.5: <b>${pm25} µg/m³</b></div>` : ""}
-              ${temp !== undefined ? `<div>Temp: <b>${temp}°C</b></div>` : ""}
-              ${humidity !== undefined ? `<div>Humidity: <b>${humidity}%</b></div>` : ""}
-            </div>
-            <button id="select-btn-${state.id}" style="width:100%;margin-top:10px;padding:6px 0;background:#0f172a;color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">
-              View ${state.name} Analysis
-            </button>
-          </div>
-        `;
-
-        marker.bindPopup(popupContent, { maxWidth: 260 });
-
-        marker.on("popupopen", () => {
-          const btn = document.getElementById(`select-btn-${state.id}`);
-          if (btn) {
-            btn.onclick = () => {
-              onStateSelect(state.id);
-              marker.closePopup();
-            };
+          if (filterLevel && info.status !== filterLevel) {
+            return;
           }
-        });
 
-        marker.on("click", () => {
-          onStateSelect(state.id);
-        });
+          const size = isSelected ? 36 : 30;
+          const iconHtml = `
+            <div class="aqi-marker-badge district-pin ${isSelected ? "selected" : ""}" style="width:${size}px;height:${size}px;background-color:${fill};border:2px solid #ffffff;box-shadow:0 3px 10px rgba(0,0,0,0.35);font-size:10px;">
+              ${aqi}
+            </div>
+          `;
 
-        group.addLayer(marker);
-      });
+          const customIcon = L.divIcon({
+            html: iconHtml,
+            className: "",
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+
+          const marker = L.marker(district.coordinates, { icon: customIcon });
+
+          const pm25Est = Math.round(aqi * 0.72);
+          const pm10Est = Math.round(aqi * 1.15);
+
+          const popupContent = `
+            <div style="font-family:system-ui,-apple-system,sans-serif;width:245px;padding:12px;background:white">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#2563eb;letter-spacing:0.05em">📍 ${district.stateName} District</span>
+                <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:#f1f5f9;color:#475569;font-weight:600">${district.stationCode}</span>
+              </div>
+              <div style="font-size:15px;font-weight:800;color:#0f172a;line-height:1.2;margin-bottom:2px">${district.name}</div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:8px">Station Type: <b>${district.stationType} Monitoring</b></div>
+              
+              <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0;padding:8px;border-radius:8px;background:${fill}18">
+                <span style="font-size:26px;font-weight:900;color:${fill};line-height:1">${aqi}</span>
+                <div>
+                  <div style="font-size:10px;font-weight:700;color:#64748b">DISTRICT AQI</div>
+                  <div style="font-size:12px;font-weight:700;color:${fill}">${info.label}</div>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:#475569;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9">
+                <div>PM2.5: <b>~${pm25Est} µg/m³</b></div>
+                <div>PM10: <b>~${pm10Est} µg/m³</b></div>
+                <div>Dominant: <b style="text-transform:uppercase">${district.dominantPollutant ?? "pm25"}</b></div>
+                <div>Status: <b style="color:${info.color}">${info.label}</b></div>
+              </div>
+
+              <button id="select-district-btn-${district.id}" style="width:100%;margin-top:10px;padding:6px 0;background:#0f172a;color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">
+                Focus on ${district.name}
+              </button>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent, { maxWidth: 260 });
+
+          marker.on("popupopen", () => {
+            const btn = document.getElementById(`select-district-btn-${district.id}`);
+            if (btn) {
+              btn.onclick = () => {
+                setSelectedDistrictId(district.id);
+                map.flyTo(district.coordinates, 12, { duration: 1 });
+              };
+            }
+          });
+
+          marker.on("click", () => {
+            setSelectedDistrictId(district.id);
+          });
+
+          group.addLayer(marker);
+        });
+      } else {
+        // Render 16 State Monitoring Hubs
+        malaysiaStates.forEach((state: MalaysiaState) => {
+          const aqi = aqiMap[state.id] ?? null;
+          const res = resultMap[state.id];
+          const info = getAqiInfo(aqi);
+          const fill = getAqiMapFill(aqi);
+          const isSelected = selectedStateId === state.id;
+
+          let lat = state.coordinates[0];
+          let lng = state.coordinates[1];
+          if (res?.data?.city?.geo && res.data.city.geo.length === 2) {
+            lat = res.data.city.geo[0];
+            lng = res.data.city.geo[1];
+          }
+
+          if (filterLevel && info.status !== filterLevel) {
+            return;
+          }
+
+          const size = isSelected ? 38 : 32;
+          const iconHtml = `
+            <div class="aqi-marker-badge ${isSelected ? "selected" : ""}" style="width:${size}px;height:${size}px;background-color:${fill};">
+              ${aqi ?? "–"}
+            </div>
+          `;
+
+          const customIcon = L.divIcon({
+            html: iconHtml,
+            className: "",
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          });
+
+          const marker = L.marker([lat, lng], { icon: customIcon });
+
+          const temp = res?.data?.iaqi?.t?.v;
+          const humidity = res?.data?.iaqi?.h?.v;
+          const pm25 = res?.data?.iaqi?.pm25?.v;
+          const stationTitle = res?.data?.city?.name || state.nameMs;
+          const districtCount = getDistrictsByState(state.id).length;
+
+          const popupContent = `
+            <div style="font-family:system-ui,-apple-system,sans-serif;width:240px;padding:12px;background:white">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#888;letter-spacing:0.05em">${state.region === "peninsular" ? "Peninsular" : "East Malaysia"}</span>
+                <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#eff6ff;color:#1d4ed8;font-weight:700">${districtCount} Districts</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <span class="malaysia-state-flag-icon malaysia-state-flag-icon-${state.flagCode}" style="width:20px;height:14px;border-radius:3px"></span>
+                <div style="font-size:15px;font-weight:700;color:#111;line-height:1.2">${stationTitle}</div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0;padding:8px;border-radius:8px;background:${fill}18">
+                <span style="font-size:26px;font-weight:900;color:${fill};line-height:1">${aqi ?? "N/A"}</span>
+                <div>
+                  <div style="font-size:10px;font-weight:700;color:#666">AQI INDEX</div>
+                  <div style="font-size:12px;font-weight:700;color:${fill}">${info.label}</div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:#555;margin-top:8px;padding-top:8px;border-top:1px solid #eee">
+                ${pm25 !== undefined ? `<div>PM2.5: <b>${pm25} µg/m³</b></div>` : ""}
+                ${temp !== undefined ? `<div>Temp: <b>${temp}°C</b></div>` : ""}
+                ${humidity !== undefined ? `<div>Humidity: <b>${humidity}%</b></div>` : ""}
+              </div>
+              <button id="select-btn-${state.id}" style="width:100%;margin-top:10px;padding:7px 0;background:#2563eb;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+                Drill Down into ${state.name} Districts (${districtCount}) →
+              </button>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent, { maxWidth: 260 });
+
+          marker.on("popupopen", () => {
+            const btn = document.getElementById(`select-btn-${state.id}`);
+            if (btn) {
+              btn.onclick = () => {
+                onStateSelect(state.id);
+                setGranularity("district");
+                map.flyTo(state.coordinates, 9.5, { duration: 1.2 });
+                marker.closePopup();
+              };
+            }
+          });
+
+          marker.on("click", () => {
+            onStateSelect(state.id);
+            setGranularity("district");
+            map.flyTo(state.coordinates, 9.5, { duration: 1.2 });
+          });
+
+          group.addLayer(marker);
+        });
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [aqiMap, selectedStateId, filterLevel]
+    [aqiMap, selectedStateId, filterLevel, granularity, selectedDistrictId]
   );
 
   // Function to render active fire hotspots during simulation
@@ -679,21 +777,29 @@ export default function MalaysiaMapInner({
     const map = leafletMapRef.current;
 
     if (region === "all") {
+      onStateSelect(null as any);
+      setGranularity("state");
       if (geoLayerRef.current) {
         map.fitBounds(geoLayerRef.current.getBounds(), { padding: [16, 16], duration: 1 });
       } else {
         map.flyTo([4.1, 109.2], 6);
       }
     } else if (region === "peninsular") {
+      onStateSelect(null as any);
+      setGranularity("state");
       map.flyTo([4.2, 102.0], 7, { duration: 1.2 });
     } else if (region === "sabah") {
+      onStateSelect(null as any);
+      setGranularity("state");
       map.flyTo([5.4, 117.0], 7.5, { duration: 1.2 });
     } else if (region === "sarawak") {
+      onStateSelect(null as any);
+      setGranularity("state");
       map.flyTo([2.6, 113.0], 7, { duration: 1.2 });
     }
   };
 
-  // Locate User GPS Position & Display Nearest Station
+  // Locate User GPS Position & Display Nearest Station (among all 68+ districts)
   const handleLocateUser = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser.");
@@ -701,7 +807,7 @@ export default function MalaysiaMapInner({
     }
 
     setIsLocating(true);
-    toast.loading("Acquiring your location...", { id: "geo-toast" });
+    toast.loading("Acquiring GPS location...", { id: "geo-toast" });
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -716,20 +822,26 @@ export default function MalaysiaMapInner({
         const L = LRef.current;
         const map = leafletMapRef.current;
 
-        // Find nearest station
-        let nearestState = malaysiaStates[0];
+        // Find nearest district station among all 68+ stations in Malaysia
+        let nearestDistrict = malaysiaDistricts[0];
         let minDistance = Infinity;
 
-        for (const st of malaysiaStates) {
-          const dist = getDistanceKm(lat, lng, st.coordinates[0], st.coordinates[1]);
+        for (const dst of malaysiaDistricts) {
+          const dist = getDistanceKm(lat, lng, dst.coordinates[0], dst.coordinates[1]);
           if (dist < minDistance) {
             minDistance = dist;
-            nearestState = st;
+            nearestDistrict = dst;
           }
         }
 
-        const nearestAqi = aqiMap[nearestState.id] ?? null;
+        const parentAqi = aqiMap[nearestDistrict.stateId] ?? 60;
+        const nearestAqi = Math.max(10, Math.min(450, parentAqi + nearestDistrict.baseAqiOffset));
         const nearestInfo = getAqiInfo(nearestAqi);
+
+        // Switch to district view and select parent state
+        onStateSelect(nearestDistrict.stateId);
+        setGranularity("district");
+        setSelectedDistrictId(nearestDistrict.id);
 
         // Initialize or clear user location layer group
         if (!userLocationGroupRef.current) {
@@ -769,7 +881,7 @@ export default function MalaysiaMapInner({
         }).addTo(userLocationGroupRef.current);
 
         const popupHtml = `
-          <div style="font-family:system-ui,-apple-system,sans-serif;width:245px;padding:12px;background:white">
+          <div style="font-family:system-ui,-apple-system,sans-serif;width:250px;padding:12px;background:white">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
               <span style="font-size:16px">📍</span>
               <span style="font-size:13px;font-weight:700;color:#0f172a">Your Current Location</span>
@@ -778,17 +890,17 @@ export default function MalaysiaMapInner({
               GPS: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E (±${Math.round(accuracy)}m)
             </div>
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px">
-              <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase">Nearest Monitoring Station</div>
+              <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase">Nearest CAQM Station</div>
               <div style="font-size:13px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:4px">
-                <span>${nearestState.name}</span>
+                <span>${nearestDistrict.name}</span>
                 <span style="font-size:11px;color:#2563eb;font-weight:600">(${minDistance.toFixed(1)} km)</span>
               </div>
               <div style="font-size:11px;color:#334155;margin-top:3px">
-                Station AQI: <b style="color:${nearestInfo.color}">${nearestAqi ?? "N/A"}</b> — ${nearestInfo.label}
+                District AQI: <b style="color:${nearestInfo.color}">${nearestAqi}</b> — ${nearestInfo.label} (${nearestDistrict.stationType})
               </div>
             </div>
             <button id="user-loc-select-btn" style="width:100%;padding:6px 0;background:#0f172a;color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">
-              View ${nearestState.name} Station Analysis
+              Focus ${nearestDistrict.name} Station
             </button>
           </div>
         `;
@@ -799,7 +911,8 @@ export default function MalaysiaMapInner({
           const btn = document.getElementById("user-loc-select-btn");
           if (btn) {
             btn.onclick = () => {
-              onStateSelect(nearestState.id);
+              setSelectedDistrictId(nearestDistrict.id);
+              map.flyTo(nearestDistrict.coordinates, 12, { duration: 1 });
               userMarker.closePopup();
             };
           }
@@ -812,7 +925,7 @@ export default function MalaysiaMapInner({
           userMarker.openPopup();
         }, 1500);
 
-        toast.success(`📍 Location detected! Nearest station: ${nearestState.name} (${minDistance.toFixed(1)} km).`, {
+        toast.success(`📍 Location detected! Nearest station: ${nearestDistrict.name} (${minDistance.toFixed(1)} km).`, {
           id: "geo-toast",
         });
       },
@@ -840,6 +953,9 @@ export default function MalaysiaMapInner({
     { key: "very-unhealthy", label: "Hazardous (201+)", color: "#9333ea" },
   ];
 
+  const selectedStateObj = selectedStateId ? malaysiaStates.find((s) => s.id === selectedStateId) : null;
+  const stateDistricts = selectedStateId ? getDistrictsByState(selectedStateId) : [];
+
   return (
     <div
       className={`flex flex-col gap-3 transition-all ${
@@ -848,8 +964,40 @@ export default function MalaysiaMapInner({
     >
       {/* Top Map Action Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-card p-2.5 ring-1 ring-border shadow-xs">
-        {/* Region Jumps & My Location */}
+        {/* Granularity & Region Jumps */}
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* State vs District Switcher */}
+          <div className="flex items-center rounded-lg bg-muted p-0.5 ring-1 ring-border mr-1">
+            <button
+              type="button"
+              onClick={() => {
+                setGranularity("state");
+                onStateSelect(null as any);
+                leafletMapRef.current?.flyTo([4.1, 109.2], 6);
+              }}
+              className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                granularity === "state"
+                  ? "bg-background text-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Building2 className="size-3.5" />
+              <span>States (16)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setGranularity("district")}
+              className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                granularity === "district"
+                  ? "bg-background text-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <MapPin className="size-3.5" />
+              <span>Districts ({selectedStateId ? stateDistricts.length : "68"})</span>
+            </button>
+          </div>
+
           <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider pl-1 pr-1 hidden sm:inline-flex items-center gap-1">
             <Compass className="size-3.5" /> Focus:
           </span>
@@ -1002,14 +1150,39 @@ export default function MalaysiaMapInner({
           isSimulationActive={isSimulationActive}
         />
 
-        {/* Floating Map Watermark / Info Badge */}
-        <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 rounded-lg bg-background/90 px-3 py-1.5 text-xs font-medium backdrop-blur-md ring-1 ring-border shadow-md pointer-events-none">
-          <Globe className="size-3.5 text-primary" />
-          <span>
-            {isSimulationActive
-              ? `🔥 Haze Simulation: ${simulationDay?.dayName} — ${simulationDay?.title}`
-              : "Malaysia Air Quality Live Map"}
-          </span>
+        {/* Floating Drill-down Breadcrumb & Info Badge */}
+        <div className="absolute top-3 left-3 z-[400] flex items-center gap-2 flex-wrap">
+          {granularity === "district" && selectedStateId ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  onStateSelect(null as any);
+                  setGranularity("state");
+                  leafletMapRef.current?.flyTo([4.1, 109.2], 6);
+                }}
+                className="flex items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-xs font-bold text-foreground ring-1 ring-border shadow-md backdrop-blur-md hover:bg-muted transition-all cursor-pointer pointer-events-auto"
+              >
+                <ArrowLeft className="size-3.5 text-primary" />
+                <span>All 16 States</span>
+              </button>
+              <div className="flex items-center gap-1.5 rounded-lg bg-card/95 px-3 py-1.5 text-xs font-semibold text-foreground ring-1 ring-border shadow-md backdrop-blur-md">
+                <span className="text-primary font-bold">{selectedStateObj?.name}:</span>
+                <span className="text-muted-foreground">{stateDistricts.length} CAQM Stations</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 rounded-lg bg-background/90 px-3 py-1.5 text-xs font-medium backdrop-blur-md ring-1 ring-border shadow-md pointer-events-none">
+              <Globe className="size-3.5 text-primary" />
+              <span>
+                {isSimulationActive
+                  ? `🔥 Haze Simulation: ${simulationDay?.dayName} — ${simulationDay?.title}`
+                  : granularity === "district"
+                    ? "Malaysia 68+ District Monitoring Stations"
+                    : "Malaysia Air Quality Live Map (16 States)"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Floating Quick Action Helper */}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles, Building2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 import type { StateAqiResult } from "./waqi-service";
 import type { MalaysiaState } from "./malaysia-states";
+import { getDistrictsByState } from "./malaysia-districts";
 import { AqiKpiStrip } from "./aqi-kpi-strip";
 import { MalaysiaMap } from "./malaysia-map";
 import { StateAqiGrid } from "./state-aqi-grid";
@@ -195,6 +196,52 @@ export function AirQualityClient({ initialResults, states }: AirQualityClientPro
                     {selectedResult.data.dominentpol}
                   </span>
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* District CAQM Stations in Selected State */}
+          {selectedState && (
+            <div className="flex flex-col gap-2.5 rounded-xl bg-card p-3.5 ring-1 ring-border shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <Building2 className="size-4 text-primary" />
+                  <span>District Stations in {selectedState.name}</span>
+                </div>
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  {getDistrictsByState(selectedState.id).length} Active Stations
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                {getDistrictsByState(selectedState.id).map((dst) => {
+                  const parentAqi = activeAqi ?? selectedResult?.data?.aqi ?? 60;
+                  const dstAqi = Math.max(10, Math.min(450, parentAqi + dst.baseAqiOffset));
+                  const dstInfo = getAqiInfo(dstAqi);
+                  return (
+                    <div
+                      key={dst.id}
+                      className="flex flex-col gap-1 rounded-lg border border-border/70 bg-muted/30 p-2.5 transition-all hover:bg-muted/60"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground truncate">{dst.name}</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-background text-muted-foreground border border-border">
+                          {dst.stationCode}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          {dst.stationType} Monitoring
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`size-2 rounded-full ${dstInfo.dotClass}`} />
+                          <span className={`text-xs font-bold font-mono ${dstInfo.textClass}`}>
+                            {dstAqi} AQI
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
