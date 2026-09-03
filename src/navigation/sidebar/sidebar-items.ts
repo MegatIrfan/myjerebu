@@ -8,6 +8,7 @@ import {
   Eye,
   FileText,
   Gauge,
+  Globe,
   Info,
   Layers,
   type LucideIcon,
@@ -61,6 +62,12 @@ export const sidebarItems: NavGroup[] = [
     id: 1,
     label: "Main Monitoring",
     items: [
+      {
+        id: "public-portal",
+        title: "APIMS Public Portal",
+        url: "/",
+        icon: Globe,
+      },
       {
         id: "air-quality-live",
         title: "Live Air Quality",
