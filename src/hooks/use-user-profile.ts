@@ -32,6 +32,10 @@ function initProfile() {
     const stored = localStorage.getItem(PROFILE_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
+      // Clean up old default Unsplash placeholder if present
+      if (parsed.avatar && parsed.avatar.includes("photo-1534528741775-53994a69daeb")) {
+        parsed.avatar = "";
+      }
       currentProfile = { ...DEFAULT_PROFILE, ...parsed };
     }
   } catch {

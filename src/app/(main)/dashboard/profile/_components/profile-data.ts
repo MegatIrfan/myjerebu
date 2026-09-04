@@ -66,7 +66,7 @@ export const profile: ProfileRecord = {
   legalName: "Megat Irfan bin Megat",
   pronouns: "He / him",
   initials: "MI",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+  avatar: "",
   engagementStatus: "Active",
   jobTitle: "Pegawai Pentadbir Sistem",
   jobLevel: "Utama",

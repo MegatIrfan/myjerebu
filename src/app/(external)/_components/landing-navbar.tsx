@@ -71,7 +71,7 @@ export function LandingNavbar({ lang, onToggleLang }: LandingNavbarProps) {
                 </Badge>
               </div>
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline-block">
-                Jabatan Alam Sekitar Malaysia
+                Portal Pemantauan Kualiti Udara
               </span>
             </div>
           </Link>

@@ -66,7 +66,7 @@ export function LandingOfficialReferences({ lang }: LandingOfficialReferencesPro
 
   const handleDownload = (title: string) => {
     toast.success(`Memuat turun: ${title}`, {
-      description: "Fail PDF rasmi daripada Jabatan Alam Sekitar Malaysia.",
+      description: "Fail dokumen rujukan sedang dimuat turun.",
     });
   };
 

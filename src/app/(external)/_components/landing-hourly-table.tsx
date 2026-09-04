@@ -245,7 +245,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
               </div>
               <CardDescription className="text-xs mt-1">
                 {lang === "ms"
-                  ? "Bacaan telemetri kualiti udara setiap jam mengikut piawaian rasmi Jabatan Alam Sekitar Malaysia (JAS)"
+                  ? "Bacaan telemetri kualiti udara setiap jam mengikut piawaian Indeks Pencemar Udara (IPU)"
                   : "Hourly air pollutant index telemetry across Malaysian ambient monitoring network"}
               </CardDescription>
             </div>
