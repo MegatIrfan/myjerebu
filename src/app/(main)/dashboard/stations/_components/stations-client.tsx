@@ -27,6 +27,7 @@ import { MalaysiaFlag } from "@/components/malaysia-flag";
 import type { StateAqiResult } from "../../air-quality/_components/waqi-service";
 import type { MalaysiaState } from "../../air-quality/_components/malaysia-states";
 import { getAqiInfo } from "../../air-quality/_components/aqi-utils";
+import { AqiSocialCardExport } from "../../air-quality/_components/aqi-social-card-export";
 import { toast } from "sonner";
 
 interface StationsClientProps {
@@ -143,7 +144,8 @@ export function StationsClient({ initialResults, states }: StationsClientProps) 
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <AqiSocialCardExport results={results} states={states} />
           <Button
             variant="outline"
             size="sm"

@@ -16,6 +16,7 @@ import { PollutantBreakdown } from "./pollutant-breakdown";
 import { getAqiInfo } from "./aqi-utils";
 import { HAZE_SIMULATION_DAYS, type SimulationDay } from "./haze-simulation-data";
 import { HazeSimulationTimeline } from "./haze-simulation-timeline";
+import { AqiSocialCardExport } from "./aqi-social-card-export";
 
 interface AirQualityClientProps {
   initialResults: StateAqiResult[];
@@ -117,12 +118,17 @@ export function AirQualityClient({ initialResults, states }: AirQualityClientPro
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground text-xs hidden sm:inline">
             {isSimulationActive ? `Simulation: ${simulationDay?.dateStr}` : `Updated: ${lastUpdated.toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" })}`}
           </span>
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+          <AqiSocialCardExport
+            results={results}
+            states={states}
+            defaultStateId={selectedStateId || "kuala-lumpur"}
+          />
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="gap-1.5 font-semibold">
             <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh Data
+            <span>Refresh</span>
           </Button>
         </div>
       </div>

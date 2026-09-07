@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LocateFixed, MapPin, Activity, CheckCircle2, AlertTriangle, ShieldAlert } from "lucide-react";
 import { getAqiInfo } from "@/app/(main)/dashboard/air-quality/_components/aqi-utils";
 import { malaysiaDistricts, type MalaysiaDistrict } from "@/app/(main)/dashboard/air-quality/_components/malaysia-districts";
@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { AqiSocialCardExport } from "@/app/(main)/dashboard/air-quality/_components/aqi-social-card-export";
 import { toast } from "sonner";
 
 interface LandingKpiSummaryProps {
@@ -18,10 +19,20 @@ interface LandingKpiSummaryProps {
   onSelectStation?: (districtId: string) => void;
 }
 
-export function LandingKpiSummary({ results, lang, onSelectStation }: LandingKpiSummaryProps) {
+export function LandingKpiSummary({ results, lang, selectedStationId, onSelectStation }: LandingKpiSummaryProps) {
   const [nearestStation, setNearestStation] = useState<MalaysiaDistrict | null>(malaysiaDistricts[0]);
   const [userDistance, setUserDistance] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+
+  // Sync when selectedStationId changes
+  useEffect(() => {
+    if (selectedStationId) {
+      const found = malaysiaDistricts.find((d) => d.id === selectedStationId);
+      if (found) {
+        setNearestStation(found);
+      }
+    }
+  }, [selectedStationId]);
 
   // Calculate AQI map lookup
   const aqiMap = useMemo(() => {
@@ -262,15 +273,28 @@ export function LandingKpiSummary({ results, lang, onSelectStation }: LandingKpi
           )}
         </CardContent>
 
-        <CardFooter className="border-t border-border pt-3 text-[11px] justify-between">
-          <span className="text-muted-foreground font-medium">
-            Jenis: <b>{nearestStation?.stationType}</b>
-          </span>
-          {userDistance !== null && (
-            <Badge variant="secondary" className="font-bold text-primary">
-              Jarak: {userDistance.toFixed(1)} km
-            </Badge>
-          )}
+        <CardFooter className="border-t border-border pt-3 text-[11px] justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground font-medium">
+              Jenis: <b>{nearestStation?.stationType}</b>
+            </span>
+            {userDistance !== null && (
+              <Badge variant="secondary" className="font-bold text-primary">
+                Jarak: {userDistance.toFixed(1)} km
+              </Badge>
+            )}
+          </div>
+          <AqiSocialCardExport
+            results={results}
+            defaultStateId={nearestStation?.stateId || "kuala-lumpur"}
+            defaultDistrictId={nearestStation?.id}
+            initialLang={lang}
+            trigger={
+              <Button size="sm" variant="outline" className="h-7 px-2.5 text-xs font-bold gap-1.5 shadow-xs">
+                <span>{lang === "ms" ? "Eksport Kad JPG (4:3)" : "Export 4:3 Card"}</span>
+              </Button>
+            }
+          />
         </CardFooter>
       </Card>
     </div>
