@@ -922,13 +922,13 @@ export function AqiSocialCardExport({
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2 pt-2 border-t border-border">
-          <div className="flex items-center gap-2 flex-1">
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-border">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 flex-1">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs font-semibold h-8"
+              className="gap-1.5 text-xs font-semibold h-9 sm:h-8 w-full"
               onClick={handleCopyImage}
             >
               {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
@@ -939,7 +939,7 @@ export function AqiSocialCardExport({
               type="button"
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs font-semibold h-8"
+              className="gap-1.5 text-xs font-semibold h-9 sm:h-8 w-full"
               onClick={handleShare}
             >
               <Share2 className="size-3.5" />
@@ -949,7 +949,7 @@ export function AqiSocialCardExport({
 
           <Button
             type="button"
-            className="gap-2 font-bold text-xs h-8 bg-primary text-primary-foreground shadow-sm"
+            className="gap-2 font-bold text-xs h-9 sm:h-8 w-full sm:w-auto bg-primary text-primary-foreground shadow-sm"
             onClick={handleDownloadJpg}
             disabled={isExporting}
           >

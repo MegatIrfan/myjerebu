@@ -249,20 +249,20 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
             </div>
 
             {/* Interactive Region Pills, State Selector & Search */}
-            <CardAction className="flex flex-wrap items-center gap-2">
+            <CardAction className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {/* Region Switcher Buttons */}
-              <div className="flex items-center rounded-lg bg-muted p-0.5 ring-1 ring-border text-xs">
+              <div className="flex items-center rounded-lg bg-muted p-0.5 ring-1 ring-border text-xs overflow-x-auto max-w-full">
                 <button
                   type="button"
                   onClick={() => {
                     setSelectedRegion("all");
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     selectedRegion === "all" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  Semua (68)
+                  Semua ({tableData.length})
                 </button>
                 <button
                   type="button"
@@ -270,7 +270,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
                     setSelectedRegion("peninsular");
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     selectedRegion === "peninsular" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -282,7 +282,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
                     setSelectedRegion("sabah");
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     selectedRegion === "sabah" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -294,7 +294,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
                     setSelectedRegion("sarawak");
                     setPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     selectedRegion === "sarawak" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -309,7 +309,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
                   setSelectedState(e.target.value);
                   setPage(1);
                 }}
-                className="h-8 rounded-lg bg-muted px-2.5 text-xs font-semibold text-foreground border border-border outline-hidden cursor-pointer"
+                className="h-8 rounded-lg bg-muted px-2.5 text-xs font-semibold text-foreground border border-border outline-hidden cursor-pointer flex-1 sm:flex-initial"
               >
                 <option value="all">Semua Negeri (16)</option>
                 {uniqueStates.map((st) => (
@@ -320,7 +320,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
               </select>
 
               {/* Search Station Input */}
-              <div className="relative w-40 sm:w-48">
+              <div className="relative w-full sm:w-48">
                 <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
                 <Input
                   placeholder="Cari stesen / kod..."
@@ -329,7 +329,7 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="h-8 pl-8 text-xs bg-muted"
+                  className="h-8 pl-8 text-xs bg-muted w-full"
                 />
               </div>
             </CardAction>
@@ -338,6 +338,10 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
 
         {/* Spacious 24-Hour Table */}
         <CardContent className="p-0">
+          <div className="sm:hidden px-3 py-1.5 bg-muted/40 text-[11px] text-muted-foreground font-medium flex items-center justify-between border-b border-border">
+            <span>👈 Geser jadual untuk trend 24 jam 👉</span>
+            <span className="font-mono text-[10px]">{filteredData.length} stesen</span>
+          </div>
           <div className="overflow-x-auto">
             <Table className="min-w-[1050px] text-xs">
               <TableHeader>

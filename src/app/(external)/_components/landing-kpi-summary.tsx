@@ -134,20 +134,20 @@ export function LandingKpiSummary({ results, lang, selectedStationId, onSelectSt
                 {lang === "ms" ? "Ringkasan Status Kualiti Udara (IPU)" : "Air Quality Status Summary (API)"}
               </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                {nowDate}, {nowTime} (MYT +08:00) · 68 Stesen CAQM Beroperasi
+                {nowDate}, {nowTime} (MYT +08:00) · {counts.total} Stesen CAQM Beroperasi
               </CardDescription>
             </div>
             <CardAction>
               <Badge variant="outline" className="font-mono text-xs">
-                Total: 68 Stations
+                Total: {counts.total} Stations
               </Badge>
             </CardAction>
           </div>
         </CardHeader>
 
         <CardContent className="pt-4">
-          {/* 6 Grid Counters */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+          {/* 6 Grid Counters: 3 cols on mobile, 6 cols on md+ */}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-2.5">
             {/* Good (0-50) - Blue */}
             <div className="flex flex-col items-center justify-center rounded-xl bg-blue-500/10 border border-blue-500/25 p-3 text-center transition-all hover:scale-[1.02]">
               <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">Good</span>
