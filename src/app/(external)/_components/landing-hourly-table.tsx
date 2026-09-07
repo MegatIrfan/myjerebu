@@ -41,13 +41,11 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
   const [page, setPage] = useState(1);
   const rowsPerPage = 9;
 
-  // Build 24 hour headers (e.g. from 14:00 yesterday to 14:00 today)
+  // Build 24 hour headers (24 unique hours up to 14:00 / current hour)
   const hours = useMemo(() => {
     const arr = [];
-    for (let h = 14; h < 24; h++) {
-      arr.push(`${h.toString().padStart(2, "0")}:00`);
-    }
-    for (let h = 0; h <= 14; h++) {
+    for (let i = 23; i >= 0; i--) {
+      const h = (14 - i + 24) % 24;
       arr.push(`${h.toString().padStart(2, "0")}:00`);
     }
     return arr;
@@ -347,8 +345,8 @@ export function LandingHourlyTable({ results, lang }: LandingHourlyTableProps) {
                   <TableHead className="py-3 px-3 sticky left-0 bg-muted/95 z-20 w-12 text-center">No</TableHead>
                   <TableHead className="py-3 px-3 sticky left-12 bg-muted/95 z-20 w-36">Negeri / State</TableHead>
                   <TableHead className="py-3 px-3 sticky left-48 bg-muted/95 z-20 w-52">Stesen CAQM</TableHead>
-                  {hours.map((h) => (
-                    <TableHead key={h} className="py-3 px-2 text-center font-mono font-bold w-12 text-[10px]">
+                  {hours.map((h, idx) => (
+                    <TableHead key={`hour-${h}-${idx}`} className="py-3 px-2 text-center font-mono font-bold w-12 text-[10px]">
                       {h}
                     </TableHead>
                   ))}
